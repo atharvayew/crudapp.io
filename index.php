@@ -1,55 +1,75 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>9dc0a5e5</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+        integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+</head>
+
 <?php 
-require "pdo.php";
-session_start();
+    require "pdo.php";
 
-// Start output buffering
-ob_start();
+    session_start();
+
 ?>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const messageDiv = document.getElementById('message');
-        const contentDiv = document.getElementById('content');
+<body>
+    <h1>Alan Dsilva's Resume Registry</h1>
 
-        <?php if (isset($_SESSION['success'])): ?>
-            messageDiv.innerHTML = "<p style='color: green'><?= htmlspecialchars($_SESSION['success']) ?></p>";
-            <?php unset($_SESSION['success']); ?>
-        <?php endif; ?>
+    <?php
+        if (isset($_SESSION['success'])) {
+            echo "<p style='color: green'>".$_SESSION['success']."</p>";
+            unset($_SESSION['success']);
+        }
+        if ( isset($_SESSION['name'])) {
+            echo "<a href='logout.php'>Logout</a><br />";
+           
+        } else {
+            echo "<a href='login.php'>Please log in</a>";
+        }
 
-        <?php if (isset($_SESSION['name'])): ?>
-            messageDiv.innerHTML += "<a href='logout.php'>Logout</a><br />";
-        <?php else: ?>
-            messageDiv.innerHTML += "<a href='login.php'>Please log in</a>";
-        <?php endif; ?>
+        $statement = $pdo->query("SELECT * FROM profile");
 
-        // Fetch profiles
-        <?php
+        $row = $statement->fetch(PDO::FETCH_ASSOC);
+
+        if ($row != false) {
+
             $statement = $pdo->query("SELECT * FROM profile");
-            if ($statement->rowCount() > 0): ?>
-                let table = "<table class='table table-bordered'><thead><tr><th>Name</th><th>Email</th>";
-                <?php if (isset($_SESSION['name'])): ?>
-                    table += "<th>Action</th>";
-                <?php endif; ?>
-                table += "</tr></thead><tbody>";
-                <?php while ($row = $statement->fetch(PDO::FETCH_ASSOC)): ?>
-                    table += "<tr><td><?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?></td>";
-                    table += "<td><?= htmlspecialchars($row['email']) ?></td>";
-                    <?php if (isset($_SESSION['name'])): ?>
-                        table += "<td><a href='edit.php?profile_id=<?= $row['profile_id'] ?>'>Edit</a> <a href='delete.php?profile_id=<?= $row['profile_id'] ?>'>Delete</a></td>";
-                    <?php endif; ?>
-                    table += "</tr>";
-                <?php endwhile; ?>
-                table += "</tbody></table>";
-                contentDiv.innerHTML = table;
-        <?php endif; ?>
+            
+            echo "<table border='1'>
+            <tbody>
+            <tr> 
+            <th>Name</th>
+            <th>Headline</th>";
 
-        <?php if (isset($_SESSION['name'])): ?>
-            contentDiv.innerHTML += "<a href='add.php'>Add New Entry</a>";
-        <?php endif; ?>
-    });
-</script>
+            if (isset($_SESSION['name'])) {
+                echo "<th>Action</th>";
+            }
+            
+            echo "</tr>";
+            while ( $row = $statement->fetch(PDO::FETCH_ASSOC)) {
+                echo "<tr>";
+                echo "<td>".$row['first_name']." ".$row['last_name']."</td>";
+                echo "<td>".$row['email']."</td>";
+                if (isset($_SESSION['name'])) {
+                    echo "<td>
+                        <a href='edit.php?profile_id=".$row['profile_id']."'>Edit </a>
+                        <a href='delete.php?profile_id=".$row['profile_id']."'>Delete</a>
+                    </td>";
+                }
+                echo "</tr>";
+            }
+            echo "</tbody></table>";
+        }
+        
 
-<?php
-// Send output
-ob_end_flush();
-?>
+        if ( isset($_SESSION['name'])) {
+            echo "<a href='add.php'>Add New Entry</a>";
+        } 
+
+    ?>
+</body>
+
+</html>
